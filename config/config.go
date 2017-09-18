@@ -15,7 +15,7 @@ import (
 func Load(iniName string, data interface{}) error {
 	var confFile string
 
-	flag.StringVar(&confFile, "f", "", "HTTP service address")
+	flag.StringVar(&confFile, "f", "", "Config file path")
 	flag.Parse()
 
 	if len(confFile) == 0 {
@@ -27,6 +27,7 @@ func Load(iniName string, data interface{}) error {
 		confFile = fmt.Sprintf("%s/etc/%s", etcpath, iniName)
 	}
 
+	clog.Output("Trying to load conf file %s ...", confFile)
 	if _, err := os.Stat(confFile); os.IsNotExist(err) {
 		clog.Output("No conf file found, using default values")
 		return errors.New("Can't find conf file")
