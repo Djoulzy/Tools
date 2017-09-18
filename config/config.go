@@ -11,6 +11,15 @@ import (
 	"github.com/go-ini/ini"
 )
 
+func tryingFile(confFile string) error {
+	clog.Output("Trying to load conf file %s ...", confFile)
+	if _, err := os.Stat(confFile); os.IsNotExist(err) {
+		return errors.New("Can't find conf file")
+	} else {
+		return nil
+	}
+}
+
 // Load de conf ini file and initialize the struct
 func Load(iniName string, data interface{}) error {
 	var confFile string
@@ -25,10 +34,12 @@ func Load(iniName string, data interface{}) error {
 		}
 		etcpath := strings.TrimRight(gopath, "/")
 		confFile = fmt.Sprintf("%s/etc/%s", etcpath, iniName)
+		if tryingFile(confFile) != nil {
+			confFile = fmt.Sprintf("/etc/%s", iniName)
+		}
 	}
 
-	clog.Output("Trying to load conf file %s ...", confFile)
-	if _, err := os.Stat(confFile); os.IsNotExist(err) {
+	if tryingFile(confFile) != nil {
 		clog.Output("No conf file found, using default values")
 		return errors.New("Can't find conf file")
 	}
