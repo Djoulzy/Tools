@@ -23,6 +23,7 @@ func tryingFile(confFile string) error {
 // Load de conf ini file and initialize the struct
 func Load(iniName string, data interface{}) error {
 	var confFile string
+	var found bool = false
 
 	flag.StringVar(&confFile, "f", "", "Config file path")
 	flag.Parse()
@@ -36,12 +37,16 @@ func Load(iniName string, data interface{}) error {
 		confFile = fmt.Sprintf("%s/etc/%s", etcpath, iniName)
 		if tryingFile(confFile) != nil {
 			confFile = fmt.Sprintf("/etc/%s", iniName)
+		} else {
+			found = true
 		}
 	}
 
-	if tryingFile(confFile) != nil {
-		clog.Output("No conf file found, using default values")
-		return errors.New("Can't find conf file")
+	if !found {
+		if tryingFile(confFile) != nil {
+			clog.Output("No conf file found, using default values")
+			return errors.New("Can't find conf file")
+		}
 	}
 
 	clog.Output("Loading Conf File ... %s", confFile)
