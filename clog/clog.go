@@ -28,14 +28,22 @@ var fg_colors = map[string]string{
 }
 
 var bg_colors = map[string]string{
-	"black":      "40",
-	"red":        "41",
-	"green":      "42",
-	"yellow":     "43",
-	"blue":       "44",
-	"magenta":    "45",
-	"cyan":       "46",
-	"light_gray": "47",
+	"black":        "40",
+	"red":          "41",
+	"green":        "42",
+	"brown":        "43",
+	"blue":         "44",
+	"magenta":      "45",
+	"cyan":         "46",
+	"light_gray":   "47",
+	"dark_gray":    "100",
+	"light_red":    "101",
+	"light_green":  "102",
+	"yellow":       "103",
+	"light_blue":   "104",
+	"light_purple": "105",
+	"light_cyan":   "106",
+	"white":        "107",
 }
 
 type errorsColors struct {
@@ -88,7 +96,7 @@ var FATAL = errorsColors{
 	bg:    "red",
 }
 
-func getColoredString(str string, fgcolor string, bgcolor string) string {
+func GetColoredString(str string, fgcolor string, bgcolor string) string {
 	colored_string := ""
 
 	if len(fgcolor) != 0 {
@@ -109,12 +117,12 @@ func getColoredString(str string, fgcolor string, bgcolor string) string {
 }
 
 func Println(fgcolor string, bgcolor string, str string) {
-	tmp := getColoredString(str, fgcolor, bgcolor)
+	tmp := GetColoredString(str, fgcolor, bgcolor)
 	log.Println(tmp)
 }
 
 func Printf(fgcolor string, bgcolor string, format string, vars ...interface{}) {
-	tmp := getColoredString(format, fgcolor, bgcolor)
+	tmp := GetColoredString(format, fgcolor, bgcolor)
 	log.Printf(tmp, vars...)
 }
 
