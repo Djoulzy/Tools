@@ -7,6 +7,7 @@ import (
 
 var LogLevel int
 var StartLogging bool
+var ServiceCallback func(string)
 
 var fg_colors = map[string]string{
 	"black":        "0;30",
@@ -96,6 +97,13 @@ var FATAL = errorsColors{
 	bg:    "red",
 }
 
+var SERVC = errorsColors{
+	name:  "SERVC",
+	level: 1,
+	fg:    "light_blue",
+	bg:    "black",
+}
+
 func GetColoredString(str string, fgcolor string, bgcolor string) string {
 	colored_string := ""
 
@@ -166,4 +174,11 @@ func Fatal(pack string, function string, err error) {
 
 func Trace(pack string, function string, str string, vars ...interface{}) {
 	logOutput(TRACE, pack, function, str, vars...)
+}
+
+func Service(pack string, function string, str string, vars ...interface{}) {
+	logOutput(SERVC, pack, function, str, vars...)
+	if ServiceCallback != nil {
+		ServiceCallback(fmt.Sprintf(str, vars...))
+	}
 }
