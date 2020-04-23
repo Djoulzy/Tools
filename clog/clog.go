@@ -5,11 +5,13 @@ import (
 	"log"
 )
 
-var LogLevel int
-var StartLogging bool
+var logLevel int
+var startLogging bool
+
+//ServiceCallback usages
 var ServiceCallback func(string)
 
-var fg_colors = map[string]string{
+var fgColors = map[string]string{
 	"black":        "0;30",
 	"dark_gray":    "1;30",
 	"blue":         "0;34",
@@ -28,7 +30,7 @@ var fg_colors = map[string]string{
 	"white":        "1;37",
 }
 
-var bg_colors = map[string]string{
+var bgColors = map[string]string{
 	"black":        "40",
 	"red":          "41",
 	"green":        "42",
@@ -54,130 +56,154 @@ type errorsColors struct {
 	bg    string
 }
 
-var TEST = errorsColors{
+var _Test = errorsColors{
 	name:  "TEST",
 	level: 0,
 	fg:    "green",
 	bg:    "black",
 }
-var DEBUG = errorsColors{
+var _Debug = errorsColors{
 	name:  "DBUG",
 	level: 5,
 	fg:    "dark_gray",
 	bg:    "black",
 }
-var INFO = errorsColors{
+var _Info = errorsColors{
 	name:  "INFO",
 	level: 4,
 	fg:    "light_gray",
 	bg:    "black",
 }
-var TRACE = errorsColors{
+var _Trace = errorsColors{
 	name:  "TRAC",
 	level: 4,
 	fg:    "white",
 	bg:    "black",
 }
-var WARN = errorsColors{
+var _Warn = errorsColors{
 	name:  "WARN",
 	level: 2,
 	fg:    "yellow",
 	bg:    "black",
 }
-var ERROR = errorsColors{
+var _Error = errorsColors{
 	name:  "ERRR",
 	level: 1,
 	fg:    "light_red",
 	bg:    "black",
 }
-var FATAL = errorsColors{
+var _Fatal = errorsColors{
 	name:  "FATAL",
 	level: 1,
 	fg:    "white",
 	bg:    "red",
 }
 
-var SERVC = errorsColors{
+var _Servc = errorsColors{
 	name:  "SERVC",
 	level: 1,
 	fg:    "light_blue",
 	bg:    "black",
 }
 
+//GetColoredString add color info
 func GetColoredString(str string, fgcolor string, bgcolor string) string {
-	colored_string := ""
+	coloredString := ""
 
 	if len(fgcolor) != 0 {
-		if len(fg_colors[fgcolor]) != 0 {
-			colored_string = fmt.Sprintf("%s%c[%sm", colored_string, 27, fg_colors[fgcolor])
+		if len(fgColors[fgcolor]) != 0 {
+			coloredString = fmt.Sprintf("%s%c[%sm", coloredString, 27, fgColors[fgcolor])
 		}
 	}
 
 	if len(bgcolor) != 0 {
-		if len(bg_colors[bgcolor]) != 0 {
-			colored_string = fmt.Sprintf("%s%c[%sm", colored_string, 27, bg_colors[bgcolor])
+		if len(bgColors[bgcolor]) != 0 {
+			coloredString = fmt.Sprintf("%s%c[%sm", coloredString, 27, bgColors[bgcolor])
 		}
 	}
 
-	colored_string = fmt.Sprintf("%s%s%c[0m", colored_string, str, 27)
-	// return $colored_string;
-	return colored_string
+	coloredString = fmt.Sprintf("%s%s%c[0m", coloredString, str, 27)
+	// return $coloredString;
+	return coloredString
 }
 
+//CPrintln is a Println colored string
+func CPrintln(fgcolor string, bgcolor string, str string) {
+	tmp := GetColoredString(str, fgcolor, bgcolor)
+	fmt.Println(tmp)
+}
+
+//CPrintf is a Printf colored string
+func CPrintf(fgcolor string, bgcolor string, format string, vars ...interface{}) {
+	tmp := GetColoredString(format, fgcolor, bgcolor)
+	fmt.Printf(tmp, vars...)
+}
+
+//Println is a Println colored string with timestamp
 func Println(fgcolor string, bgcolor string, str string) {
 	tmp := GetColoredString(str, fgcolor, bgcolor)
 	log.Println(tmp)
 }
 
+//Printf is a Printf colored string with timestamp
 func Printf(fgcolor string, bgcolor string, format string, vars ...interface{}) {
 	tmp := GetColoredString(format, fgcolor, bgcolor)
 	log.Printf(tmp, vars...)
 }
 
+//Output log mechanism
 func Output(str string, vars ...interface{}) {
 	before := fmt.Sprintf("%s", str)
-	Printf(INFO.fg, INFO.bg, before, vars...)
+	Printf(_Info.fg, _Info.bg, before, vars...)
 }
 
 func logOutput(etype errorsColors, pack string, function string, str string, vars ...interface{}) {
-	if LogLevel < etype.level || StartLogging == false {
+	if logLevel < etype.level || startLogging == false {
 		return
 	}
 	before := fmt.Sprintf("%s|%s|%s| %s", etype.name, pack, function, str)
 	Printf(etype.fg, etype.bg, before, vars...)
 }
 
+//Warn message
 func Warn(pack string, function string, str string, vars ...interface{}) {
-	logOutput(WARN, pack, function, str, vars...)
+	logOutput(_Warn, pack, function, str, vars...)
 }
 
+//Info message
 func Info(pack string, function string, str string, vars ...interface{}) {
-	logOutput(INFO, pack, function, str, vars...)
+	logOutput(_Info, pack, function, str, vars...)
 }
 
+//Debug message
 func Debug(pack string, function string, str string, vars ...interface{}) {
-	logOutput(DEBUG, pack, function, str, vars...)
+	logOutput(_Debug, pack, function, str, vars...)
 }
 
+//Test message
 func Test(pack string, function string, str string, vars ...interface{}) {
-	logOutput(TEST, pack, function, str, vars...)
+	logOutput(_Test, pack, function, str, vars...)
 }
 
+//Error message
 func Error(pack string, function string, str string, vars ...interface{}) {
-	logOutput(ERROR, pack, function, str, vars...)
+	logOutput(_Error, pack, function, str, vars...)
 }
 
+//Fatal message
 func Fatal(pack string, function string, err error) {
-	logOutput(FATAL, pack, function, "%s", err)
+	logOutput(_Fatal, pack, function, "%s", err)
 	log.Fatal()
 }
 
+//Trace output message
 func Trace(pack string, function string, str string, vars ...interface{}) {
-	logOutput(TRACE, pack, function, str, vars...)
+	logOutput(_Trace, pack, function, str, vars...)
 }
 
+//Service callback functions
 func Service(pack string, function string, str string, vars ...interface{}) {
-	logOutput(SERVC, pack, function, str, vars...)
+	logOutput(_Servc, pack, function, str, vars...)
 	if ServiceCallback != nil {
 		ServiceCallback(fmt.Sprintf(str, vars...))
 	}
