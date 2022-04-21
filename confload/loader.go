@@ -1,23 +1,23 @@
-package config
+package confload
 
 import (
 	"errors"
 	"flag"
 	"fmt"
+	"log"
 	"os"
 	"strings"
 
-	"github.com/Djoulzy/Tools/clog"
 	"github.com/go-ini/ini"
 )
 
 func tryingFile(confFile string) error {
-	clog.Output("Trying to load conf file %s ...", confFile)
 	if _, err := os.Stat(confFile); os.IsNotExist(err) {
-		return errors.New("Can't find conf file")
-	} else {
-		return nil
+		log.Printf("Trying to load conf file %s ... err", confFile)
+		return errors.New("can't find conf file")
 	}
+	log.Printf("Trying to load conf file %s ... OK", confFile)
+	return nil
 }
 
 // Load de conf ini file and initialize the struct
@@ -37,6 +37,11 @@ func Load(iniName string, data interface{}) error {
 		confFile = fmt.Sprintf("%s/etc/%s", etcpath, iniName)
 		if tryingFile(confFile) != nil {
 			confFile = fmt.Sprintf("/etc/%s", iniName)
+			if tryingFile(confFile) != nil {
+				confFile = fmt.Sprintf("./%s", iniName)
+			} else {
+				found = true
+			}
 		} else {
 			found = true
 		}
@@ -44,12 +49,12 @@ func Load(iniName string, data interface{}) error {
 
 	if !found {
 		if tryingFile(confFile) != nil {
-			clog.Output("No conf file found, using default values")
-			return errors.New("Can't find conf file")
+			log.Printf("No conf file found, using default values")
+			return errors.New("can't find conf file")
 		}
 	}
 
-	clog.Output("Loading Conf File ... %s", confFile)
+	log.Printf("Loading Conf File ... %s", confFile)
 	cfg, err := ini.Load(confFile)
 	if err != nil {
 		return err

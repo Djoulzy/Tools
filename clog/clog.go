@@ -3,15 +3,23 @@ package clog
 import (
 	"fmt"
 	"log"
+	"os"
+	"time"
 )
 
-var logLevel int
-var startLogging bool
+// LogLevel : Niveau de log
+var LogLevel int
+
+// StartLogging : Debut du log
+var StartLogging bool
 
 //ServiceCallback usages
 var ServiceCallback func(string)
 
-var fgColors = map[string]string{
+var logToFile = false
+var fileDesc *os.File
+
+var FGcolors = map[string]string{
 	"black":        "0;30",
 	"dark_gray":    "1;30",
 	"blue":         "0;34",
@@ -30,7 +38,7 @@ var fgColors = map[string]string{
 	"white":        "1;37",
 }
 
-var bgColors = map[string]string{
+var BGcolors = map[string]string{
 	"black":        "40",
 	"red":          "41",
 	"green":        "42",
@@ -111,14 +119,14 @@ func GetColoredString(str string, fgcolor string, bgcolor string) string {
 	coloredString := ""
 
 	if len(fgcolor) != 0 {
-		if len(fgColors[fgcolor]) != 0 {
-			coloredString = fmt.Sprintf("%s%c[%sm", coloredString, 27, fgColors[fgcolor])
+		if len(FGcolors[fgcolor]) != 0 {
+			coloredString = fmt.Sprintf("%s%c[%sm", coloredString, 27, FGcolors[fgcolor])
 		}
 	}
 
 	if len(bgcolor) != 0 {
-		if len(bgColors[bgcolor]) != 0 {
-			coloredString = fmt.Sprintf("%s%c[%sm", coloredString, 27, bgColors[bgcolor])
+		if len(BGcolors[bgcolor]) != 0 {
+			coloredString = fmt.Sprintf("%s%c[%sm", coloredString, 27, BGcolors[bgcolor])
 		}
 	}
 
@@ -139,30 +147,35 @@ func CPrintf(fgcolor string, bgcolor string, format string, vars ...interface{})
 	fmt.Printf(tmp, vars...)
 }
 
-//Println is a Println colored string with timestamp
-func Println(fgcolor string, bgcolor string, str string) {
-	tmp := GetColoredString(str, fgcolor, bgcolor)
-	log.Println(tmp)
-}
-
-//Printf is a Printf colored string with timestamp
-func Printf(fgcolor string, bgcolor string, format string, vars ...interface{}) {
+//CPrintf is a Printf colored string
+func CSprintf(fgcolor string, bgcolor string, format string, vars ...interface{}) string {
 	tmp := GetColoredString(format, fgcolor, bgcolor)
-	log.Printf(tmp, vars...)
+	return fmt.Sprintf(tmp, vars...)
 }
 
 //Output log mechanism
 func Output(str string, vars ...interface{}) {
 	before := fmt.Sprintf("%s", str)
-	Printf(_Info.fg, _Info.bg, before, vars...)
+	tmp := GetColoredString(before, _Info.fg, _Info.bg)
+	log.Printf(tmp, vars...)
 }
 
 func logOutput(etype errorsColors, pack string, function string, str string, vars ...interface{}) {
-	if logLevel < etype.level || startLogging == false {
+	if LogLevel < etype.level || StartLogging == false {
 		return
 	}
 	before := fmt.Sprintf("%s|%s|%s| %s", etype.name, pack, function, str)
-	Printf(etype.fg, etype.bg, before, vars...)
+	tmp := GetColoredString(before, etype.fg, etype.bg)
+	log.Printf(tmp, vars...)
+}
+
+// File logger
+func File(pack string, function string, str string, vars ...interface{}) {
+	if StartLogging == false || logToFile == false {
+		return
+	}
+	before := fmt.Sprintf("%s|%s|%s| %s\n", time.Now().Format("15:04:05"), pack, function, str)
+	fileDesc.Write([]byte(fmt.Sprintf(before, vars...)))
 }
 
 //Warn message
@@ -207,4 +220,15 @@ func Service(pack string, function string, str string, vars ...interface{}) {
 	if ServiceCallback != nil {
 		ServiceCallback(fmt.Sprintf(str, vars...))
 	}
+}
+
+// EnableFileLog : Log also to file
+func EnableFileLog(file string) {
+	tmp, err := os.Create(file)
+	if err != nil {
+		panic(err)
+	}
+
+	logToFile = true
+	fileDesc = tmp
 }
