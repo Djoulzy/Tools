@@ -1,4 +1,4 @@
-module Tools/confload
+module github.com/Djoulzy/Tools/confload
 
 go 1.18
 
