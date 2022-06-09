@@ -178,6 +178,13 @@ func File(pack string, function string, str string, vars ...interface{}) {
 	fileDesc.Write([]byte(fmt.Sprintf(before, vars...)))
 }
 
+func FileRaw(str string, vars ...interface{}) {
+	if StartLogging == false || logToFile == false {
+		return
+	}
+	fileDesc.Write([]byte(fmt.Sprintf(str, vars...)))
+}
+
 //Warn message
 func Warn(pack string, function string, str string, vars ...interface{}) {
 	logOutput(_Warn, pack, function, str, vars...)
